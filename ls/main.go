@@ -1,5 +1,5 @@
 //This is a go port of the standard ls command of the *nix OSes,
-//currently it is basic, will become something great one day
+//currently it is basic, can become something great one day
 //author: Suraj Patil date: 22 August 2015
 
 package main
