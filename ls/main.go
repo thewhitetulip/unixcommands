@@ -25,7 +25,7 @@ func main() {
 	} else {
 
 		folderFiles := make([]string, 0, 10)
-		commands := make([]string, 0, 10)
+		commands := make([]string, 0, 10) //used to store the -t -a -lrt options
 
 		for _, value := range args {
 			if strings.HasPrefix(value, "-") {
@@ -35,16 +35,16 @@ func main() {
 			if Exists(value) {
 				folderFiles = append(folderFiles, value)
 				continue
-			} else {
-				fmt.Println("ls: no such file or directory ", value)
 			}
+			fmt.Printf("ls: cannot access %s: no such file or directory\n", value)
+
 		}
 		numberOfDir := len(folderFiles)
 		for _, value := range folderFiles {
 			fileInfo, _ := os.Stat(value)
 
 			if fileInfo.IsDir() {
-				if numberOfDir > 0 {
+				if numberOfDir > 1 {
 					fmt.Println(value, ":")
 				}
 				listDirectory(value)
@@ -58,6 +58,8 @@ func main() {
 }
 
 func listDirectory(path string) {
+	//used to print the listing of the files of that particular path which is
+	//passed as string
 	files, err := ioutil.ReadDir(path)
 
 	if err != nil {
@@ -74,6 +76,8 @@ func listDirectory(path string) {
 }
 
 func Exists(name string) bool {
+	//Takes the path of the directory as a string and returns a true or false if the
+	//path is present or not
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
 			return false
