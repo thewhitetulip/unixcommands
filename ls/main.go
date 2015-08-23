@@ -12,18 +12,72 @@ import (
 )
 
 func main() {
-	currentDirectory, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
+
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		currentDirectory, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		listDirectory(currentDirectory)
+	} else {
+
+		folderFiles := make([]string, 0, 10)
+		commands := make([]string, 0, 10)
+
+		for _, value := range args {
+			if strings.HasPrefix(value, "-") {
+				commands = append(commands, value)
+				continue
+			}
+			if Exists(value) {
+				folderFiles = append(folderFiles, value)
+				continue
+			} else {
+				fmt.Println("ls: no such file or directory ", value)
+			}
+		}
+		numberOfDir := len(folderFiles)
+		for _, value := range folderFiles {
+			fileInfo, _ := os.Stat(value)
+
+			if fileInfo.IsDir() {
+				if numberOfDir > 0 {
+					fmt.Println(value, ":")
+				}
+				listDirectory(value)
+			} else {
+				fmt.Println(value)
+			}
+
+		}
 	}
 
-	fileInfo, err := ioutil.ReadDir(currentDirectory)
+}
 
-	for _, file := range fileInfo {
+func listDirectory(path string) {
+	files, err := ioutil.ReadDir(path)
+
+	if err != nil {
+		fmt.Println(files)
+	}
+
+	for _, file := range files {
 		tmpName := file.Name()
 		if !strings.HasPrefix(tmpName, ".") {
 			fmt.Printf("%s ", tmpName)
 		}
 	}
 	fmt.Println()
+}
+
+func Exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }
