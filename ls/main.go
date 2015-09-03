@@ -15,31 +15,40 @@ func main() {
 
 	args := os.Args[1:]
 
-	if len(args) == 0 {
-		currentDirectory, err := os.Getwd()
-		if err != nil {
-			fmt.Println(err)
-		}
+	folderFiles := make([]string, 0, 10)
+	commands := make([]string, 0, 10) //used to store the -t -a -lrt options
 
-		listDirectory(currentDirectory)
-	} else {
+	currentDirectory, err := os.Getwd()
 
-		folderFiles := make([]string, 0, 10)
-		commands := make([]string, 0, 10) //used to store the -t -a -lrt options
+	if err != nil {
+		fmt.Println(err)
+	}
 
-		for _, value := range args {
-			if strings.HasPrefix(value, "-") {
+	for _, value := range args {
+		fmt.Println("Evaluating ", value)
+		if strings.HasPrefix(value, "-") {
+			value = strings.Trim(value, "-")
+			if len(value) > 1 {
+				for _, cmd := range value {
+					commands = append(commands, string(cmd))
+					continue
+				}
+			} else {
 				commands = append(commands, value)
 				continue
 			}
-			if Exists(value) {
-				folderFiles = append(folderFiles, value)
-				continue
-			}
-			fmt.Printf("ls: cannot access %s: no such file or directory\n", value)
-
+		} else if Exists(value) {
+			folderFiles = append(folderFiles, value)
+			continue
 		}
-		numberOfDir := len(folderFiles)
+		fmt.Printf("ls: cannot access %s: no such file or directory\n", value)
+
+	}
+
+	numberOfDir := len(folderFiles)
+	if numberOfDir == 0 {
+		listDirectory(currentDirectory, commands)
+	} else {
 		for _, value := range folderFiles {
 			fileInfo, _ := os.Stat(value)
 
@@ -47,7 +56,7 @@ func main() {
 				if numberOfDir > 1 {
 					fmt.Println(value, ":")
 				}
-				listDirectory(value)
+				listDirectory(value, commands)
 			} else {
 				fmt.Println(value)
 			}
@@ -57,10 +66,18 @@ func main() {
 
 }
 
-func listDirectory(path string) {
+func listDirectory(path string, commands []string) {
 	//used to print the listing of the files of that particular path which is
 	//passed as string
 	files, err := ioutil.ReadDir(path)
+	fmt.Println(commands)
+	for _, value := range commands {
+		if value == "-l" {
+			fmt.Println("-l option selected")
+		} else if value == "-r" {
+			fmt.Println("-r option selected")
+		}
+	}
 
 	if err != nil {
 		fmt.Println(files)
